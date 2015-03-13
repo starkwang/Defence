@@ -7,245 +7,156 @@
 <canvas id="myCanvas" width="1200" height="600">your browser does not support the canvas tag </canvas>
 
 <script type="text/javascript">
-document.onmousemove = moveDefence;
 
 var width = 1200;
 var height = 600;
-var ballPerSeconds = 1;//每秒小球产生数
+//var ballPerSeconds = 40;//每秒小球产生数
+var total = 2000;
+var R = 4;
+
+var pi = Math.PI*2;
 
 var canvas=document.getElementById('myCanvas');
 var ctx=canvas.getContext('2d');
 var allBalls = new Array();
 
-var defence={
-	start: 0,
-	end: (Math.PI)/3,
-	jiao: 0
-	};
-
-var HP = 100;
-var draw = drawInGame;
-var score = 0;
-
-function moveDefence(evt){
-	if(!evt){
-		evt = window.event;
-	}
-	var xx=evt.clientX-500;
-	var yy=evt.clientY-400;
-	if( yy>=0 && xx>=0)//第一右下象限
-	{
-		defence.jiao = Math.atan(yy/xx);
-	}
-	if(yy>=0 && xx<0)//左下
-	{
-		defence.jiao = Math.PI+Math.atan(yy/xx);
-	}
-	if(yy<0 && xx>=0)//右上
-	{
-		defence.jiao = Math.atan(yy/xx);
-	}
-	if(yy<0 && xx<0)//右上
-	{
-		defence.jiao = Math.atan(yy/xx)-Math.PI;
-	}
-	
-	
-	
-	defence.start = defence.jiao - (Math.PI/3);
-	defence.end = defence.jiao + (Math.PI/3);
-	
-
-}
-
-
+var mainball={};
 
 
 function Ball()//小球构造器函数
 {
-	if(Math.random()<=0.25)
-	{
-		this.x =  2;
-		this.y = height*Math.random();
-	}
-	if((Math.random()>0.25)&&(Math.random()<=0.5))
-	{
-		this.x =  998;
-		this.y = height*Math.random();
-	}
-	
-	
-	if((Math.random()<0.75)&&(Math.random()>0.5))
-	{
-		this.y =  798;
-		this.x = width*Math.random();
-	}
-	
-	if(Math.random()>=0.75)
-	{
-		this.y =  2;
-		this.x = width*Math.random();
-	}
-	this.act = function()
-	{
-	this.x=this.x+10;
-	this.y=this.y+10;
-	}
+	this.x = R+(width-2*R)*Math.random();
+	this.y = R+(height-2*R)*Math.random();
+	this.vx = -2+4*Math.random();
+	this.vy = -2+4*Math.random();
 }
-
 
 function create()//产生小球
 {
 	var cre ;
-	for(cre=0;cre<ballPerSeconds;cre++)
+	var ball = new Ball();
+	allBalls.push(ball);
+	for(cre=0;cre<total;cre++)
 	{
-		var ball = new Ball();
-		allBalls.push(ball);
+		var temball = new Ball();
+		var t = 0;
+		var L = allBalls.length;
+		for(d=0; d < L ; d++)
+		{
+			var disx = temball.x - allBalls[d].x;
+			var disy = temball.y - allBalls[d].y;
+			if(disx*disx+disy*disy <= 4*R*R)
+			{
+				t++;
+			}
+		}
+		if(t===0)
+			allBalls.push(temball);
+	
 	}
+	
+	/*
+	for(d=0;d<allBalls.length;d++)
+	{
+		for(f=d+1;f<allBalls.length;f++)
+		{
+			var disx = allBalls[d].x - allBalls[f].x;
+			var disy = allBalls[d].y - allBalls[f].y; 
+			if( disx*disx+disy*disy <= 4*R*R)
+			{
+				if(disx < 0){
+				allBalls[f].x = allBalls[f].x + R;
+				}
+				if(disx > 0){
+				allBalls[f].x = allBalls[f].x - R;
+				}
+				if(disy < 0){
+				allBalls[f].y = allBalls[f].y + R;
+				}
+				if(disx > 0){
+				allBalls[f].y = allBalls[f].y - R;
+				}
+			}
+		}
+	}*/
+	
 }
 
-function drawEnd()
+
+function draw()
 {
-	ctx.fillStyle = 'black';
-	ctx.fillRect(0, 0, width, height);
-	ctx.font = "Bold 60px Arial"; 
-	ctx.textAlign = "center";
-	ctx.fillStyle = "#FFFFFF"; 
-	ctx.fillText("游戏结束", width*0.5, height*0.5);
-
-	ctx.font = "Bold 40px Arial"; 
-	ctx.textAlign = "center";
-	ctx.fillStyle = "#FFFFFF"; 
-	ctx.fillText("得分:", width*0.5, height*0.5+60);
-
-	ctx.font = "Bold 40px Arial"; 
-	ctx.textAlign = "center";
-	ctx.fillStyle = "#FFFFFF"; 
-	ctx.fillText(score.toString(), width*0.5, height*0.5+100);
-}
-
-
-function drawInGame()
-{
-	ctx.fillStyle = 'black';
-	ctx.fillRect(0, 0, width, height);
-	var i;
-	
-	//绘制防御
-	ctx.beginPath();
-	ctx.arc(width*0.5, height*0.5, 60 , defence.start, defence.end, false); 
-	ctx.fillStyle = "#00A67C"; 
-	ctx.fill();
-	ctx.beginPath();
-	ctx.arc(width*0.5, height*0.5, 56, 0, Math.PI*2, true); 
-	ctx.fillStyle = "#000000"; 
-	ctx.fill();
-
-	//绘制红球
-	ctx.beginPath();
-	ctx.arc(width*0.5, height*0.5, 5, 0, Math.PI*2, true); 
-	ctx.fillStyle = "#B7F200"; 
-	ctx.fill();
-	
-	//绘制黑球
-	for(i=0;i<allBalls.length;i++)
+	ctx.clearRect(0,0,1200,800);
+	var L = allBalls.length;
+	for(i=0;i<L;i++)
 	{ 
 	ctx.beginPath();
-	ctx.arc(allBalls[i].x, allBalls[i].y, 5, 0, Math.PI*2, true); 
-	ctx.fillStyle = "#EF002A"; 
+	ctx.arc(allBalls[i].x, allBalls[i].y, R, 0, pi, true); 
+	ctx.fillStyle = "#35D2AB"; 
 	ctx.fill();
 	}
-
-	//绘制血条
-	ctx.fillStyle = "#DE0052";
-	ctx.fillRect(0, 0, HP*3,25 );
-	ctx.font = "Bold 20px Arial"; 
-	ctx.textAlign = "left";
-	ctx.fillStyle = "#FFFFFF"; 
-	ctx.fillText(HP.toString(), 20, 20); 
-
-	//绘制得分
-	ctx.font = "Bold 20px Arial"; 
-	ctx.textAlign = "left";
-	ctx.fillStyle = "#EE6B9C"; 
-	scoretext = "得分："+score.toString();
-	ctx.fillText(scoretext, 20, 50); 
 }
 
 function act()
 {
-	
-	for(var i=0;i<allBalls.length;i++){
-		var ax=width*0.5-allBalls[i].x;
-		var by=height*0.5-allBalls[i].y;
-		var movex = 1.5*ax*(1.5/Math.sqrt(ax*ax+by*by));
-		var movey = 1.5*by*(1.5/Math.sqrt(ax*ax+by*by));
-		allBalls[i].x=allBalls[i].x+movex;
-		allBalls[i].y=allBalls[i].y+movey;			
-	}	
-}
+	var L = allBalls.length;
+	for(i=0;i<L;i++)
+	{	
+		//碰撞边界	
+		if(allBalls[i].x < R){
+			allBalls[i].x = R;
+			allBalls[i].vx = 0 - allBalls[i].vx;
+		}
+		if(allBalls[i].x >width-R){
+			allBalls[i].x = width-R;
+			allBalls[i].vx = 0 - allBalls[i].vx;
+		}
+		
+		if(allBalls[i].y < R){
+			allBalls[i].y = R;
+			allBalls[i].vy = 0 - allBalls[i].vy;
+		}
+		if(allBalls[i].y > height-R){
+			allBalls[i].y = height-R;
+			allBalls[i].vy = 0 - allBalls[i].vy;
+		}
+		allBalls[i].x = allBalls[i].x + allBalls[i].vx;
+		allBalls[i].y = allBalls[i].y + allBalls[i].vy;
+		
+		//小球间
+		var L = allBalls.length;
+		for(j=i+1;j<L;j++)
+		{
+			var disx = allBalls[i].x - allBalls[j].x;
+			var disy = allBalls[i].y - allBalls[j].y;
+			var dis =Math.sqrt(disx*disx+disy*disy);
+			var vi = Math.sqrt(allBalls[i].vx*allBalls[i].vx+allBalls[i].vy*allBalls[i].vy);
+			var vj = Math.sqrt(allBalls[j].vx*allBalls[j].vx+allBalls[j].vy*allBalls[j].vy);
+			if(dis < 2*R)
+			{
+				allBalls[i].x = allBalls[i].x+(2*R-dis)*disx/dis/2;
+				allBalls[i].y = allBalls[i].y+(2*R-dis)*disy/dis/2;
+				allBalls[j].x = allBalls[j].x-(2*R-dis)*disx/dis/2;
+				allBalls[j].y = allBalls[j].y-(2*R-dis)*disx/dis/2;
 
-function check()
-{
-	for(var i=0;i<allBalls.length;i++)
-	{ 
-		var ax=allBalls[i].x-width*0.5;
-		var by=allBalls[i].y-height*0.5;
-		var distance = Math.sqrt(ax*ax+by*by);
-		var angel;
-		if( by>=0 && ax>=0)//第一右下象限
-		{
-			angel = Math.atan(by/ax);
-		}
-		if(by>=0 && ax<0)//左下
-		{
-			angel = Math.PI+Math.atan(by/ax);
-		}
-		if(by<0 && ax>=0)//右上
-		{
-			angel = Math.atan(by/ax);
-		}
-		if(by<0 && ax<0)//右上
-		{
-			angel = Math.atan(by/ax)-Math.PI;
-		}
-		
-		
-		if(distance<=63 && distance>=57 && 
-			( (angel>defence.start && angel<defence.end)|| 
-			  (angel+2*Math.PI>defence.start && angel+2*Math.PI<defence.end) ||
-			  (angel-2*Math.PI>defence.start && angel-2*Math.PI<defence.end)
-			) 
-		   ) 
-		{
-			allBalls.splice(i,1);
-			if(HP<100)
-			HP = HP+2;
-			score = score+Math.floor(1000/HP);
-		}
-		if(distance<=5)
-		{
-			allBalls.splice(i,1);
-			HP = HP-10;
-			if(HP < 0){
-			draw = drawEnd;
-			window.clearInterval(int);
-			}
-		}
+				var tempx = allBalls[i].vx;
+				var tempy = allBalls[i].vy;
+				allBalls[i].vx = allBalls[j].vx ;
+				allBalls[i].vy = allBalls[j].vy ;
+				allBalls[j].vx = tempx ;
+				allBalls[j].vy = tempy ;
+			}	
+		}	
 	}
 }
-
-function stark(){
-	//create();
-	act();
-	check();
-	draw();
+function stark()
+{
+draw();
+act();
 }
-var int = setInterval("stark()",30);
-setInterval("create()",500);
+create();
+setInterval("stark()", 30);
 
 
 </script>
-
 </body>
 </html>
