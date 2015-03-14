@@ -32,8 +32,8 @@ function moveDefence(evt){
 	if(!evt){
 		evt = window.event;
 	}
-	var xx=evt.clientX-500;
-	var yy=evt.clientY-400;
+	var xx=evt.clientX-width*0.5;
+	var yy=evt.clientY-height*0.5;
 	if( yy>=0 && xx>=0)//第一右下象限
 	{
 		defence.jiao = Math.atan(yy/xx);
